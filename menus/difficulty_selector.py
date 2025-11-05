@@ -1,6 +1,7 @@
-import arcade, arcade.gui, asyncio, pypresence, time, copy, json
+import arcade, arcade.gui
+
 from utils.preload import button_texture, button_hovered_texture
-from utils.constants import big_button_style, discord_presence_id
+from utils.constants import big_button_style, button_style
 
 class DifficultySelector(arcade.gui.UIView):
     def __init__(self, pypresence_client):
@@ -10,14 +11,14 @@ class DifficultySelector(arcade.gui.UIView):
         self.box = self.anchor.add(arcade.gui.UIBoxLayout(space_between=10), anchor_x='center', anchor_y='center')
 
         self.pypresence_client = pypresence_client
-
-        with open("settings.json", "r") as file:
-            self.settings_dict = json.load(file)
-
-        self.pypresence_client.update(state='In Menu', details='In Main Menu', start=self.pypresence_client.start_time)
+        self.pypresence_client.update(state='In Menu', details='In Difficulty Selector', start=self.pypresence_client.start_time)
 
     def on_show_view(self):
         super().on_show_view()
+
+        self.back_button = arcade.gui.UITextureButton(texture=button_texture, texture_hovered=button_hovered_texture, text='<--', style=button_style, width=100, height=50)
+        self.back_button.on_click = lambda event: self.main_exit()
+        self.anchor.add(self.back_button, anchor_x="left", anchor_y="top", align_x=5, align_y=-5)
 
         self.box.add(arcade.gui.UILabel(text="Difficulty Selector", font_size=32))
 
@@ -28,3 +29,7 @@ class DifficultySelector(arcade.gui.UIView):
     def play(self, difficulty):
         from game.play import Game
         self.window.show_view(Game(self.pypresence_client, difficulty))
+
+    def main_exit(self):
+        from menus.main import Main
+        self.window.show_view(Main(self.pypresence_client))

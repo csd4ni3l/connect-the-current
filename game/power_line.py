@@ -1,33 +1,26 @@
 import arcade, arcade.gui
 
-from utils.preload import button_texture, button_hovered_texture
-from utils.constants import button_style
+from utils.preload import vertical_connected, vertical_unconnected, horizontal_connected, horizontal_unconnected
 
 from typing import Literal
 
-ROTATIONS = ["right", "down", "left", "up"]
-
 class PowerLine(arcade.gui.UITextureButton):
     def __init__(self):
-        super().__init__(text="--->", style=button_style, texture=button_texture, texture_hovered=button_hovered_texture)
+        super().__init__(texture=vertical_unconnected)
 
-        self.rotation: Literal["right", "down", "left", "up"] = "right"
+        self.rotation: Literal["vertical", "horizontal"] = "vertical"
+        self.connected = False
 
         self.on_click = lambda e: self.next_rotation()
 
     def next_rotation(self):
-        current_index = ROTATIONS.index(self.rotation)
+        if self.rotation == "vertical":
+            self.rotation = "horizontal"
+            self.texture = horizontal_connected if self.connected else horizontal_unconnected
+            self.texture_hovered = horizontal_connected if self.connected else horizontal_unconnected
+        elif self.rotation == "horizontal":
+            self.rotation = "vertical"
+            self.texture = vertical_connected if self.connected else vertical_unconnected
+            self.texture_hovered = vertical_connected if self.connected else vertical_unconnected
 
-        if current_index + 1 == len(ROTATIONS):
-            self.rotation = ROTATIONS[0]
-        else:
-            self.rotation = ROTATIONS[current_index + 1]
-
-        if self.rotation == "up":
-            self.text = "^"
-        elif self.rotation == "down":
-            self.text = "ˇ"
-        elif self.rotation == "left":
-            self.text = "<---"
-        elif self.rotation == "right":
-            self.text = "--->"
+        self._requires_render = True
