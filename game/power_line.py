@@ -45,6 +45,7 @@ def get_opposite(direction):
         return "r"
     elif direction == "r":
         return "l"
+    
     elif direction == "t":
         return "b"
     elif direction == "b":
