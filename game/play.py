@@ -3,6 +3,8 @@ import arcade, arcade.gui, random
 from utils.constants import button_style
 from utils.preload import button_texture, button_hovered_texture
 
+from collections import deque
+
 from game.power_line import PowerLine
 
 class Game(arcade.gui.UIView):
@@ -14,6 +16,7 @@ class Game(arcade.gui.UIView):
 
         self.difficulty = difficulty
         self.power_lines = []
+        self.power_sources = []
 
         self.anchor = self.add_widget(arcade.gui.UIAnchorLayout(size_hint=(1, 1)))
         self.grid_size = list(map(int, difficulty.split("x")))
@@ -29,17 +32,51 @@ class Game(arcade.gui.UIView):
         for row in range(self.grid_size[0]):
             self.power_lines.append([])
             for col in range(self.grid_size[1]):
-                left_neighbor = self.power_lines[row][col - 1] if col > 0 else None
-                top_neighbor = self.power_lines[row - 1][col] if row > 0 else None
+                left_neighbour = self.power_lines[row][col - 1] if col > 0 else None
+                top_neighbour = self.power_lines[row - 1][col] if row > 0 else None
 
-                power_line = PowerLine(random.choice(["line", "corner"]), left_neighbor, top_neighbor)
+                line_type = random.choice(["line", "corner", "power_source"])
+                power_line = PowerLine(line_type, left_neighbour, top_neighbour)
+
+                if line_type == "power_source":
+                    self.power_sources.append(power_line)
+
                 self.power_grid.add(power_line, row=row, column=col)
                 self.power_lines[row].append(power_line)
 
-                if left_neighbor:
-                    left_neighbor.right_neighbor = power_line
-                if top_neighbor:
-                    top_neighbor.bottom_neighbor = power_line
+                if left_neighbour:
+                    left_neighbour.right_neighbour = power_line
+                if top_neighbour:
+                    top_neighbour.bottom_neighbour = power_line
+
+        arcade.schedule(self.update_grid, 1 / 10)
+
+    def update_grid(self, _):
+        for row in self.power_lines:
+            for power_line in row:
+                if power_line.line_type != "power_source":
+                    power_line.powered = False
+
+        queue = deque(self.power_sources)
+        visited = set()
+        
+        while queue:
+            current = queue.popleft()
+            
+            if id(current) in visited:
+                continue
+
+            visited.add(id(current))
+            
+            current.powered = True
+            
+            for connected_neighbour in current.get_connected_neighbours():
+                if id(connected_neighbour) not in visited:
+                    queue.append(connected_neighbour)
+
+        for row in self.power_lines:
+            for power_line in row:
+                power_line.update_visual()
 
     def main_exit(self):
         from menus.main import Main

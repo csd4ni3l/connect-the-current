@@ -3,79 +3,101 @@ import arcade, arcade.gui
 from utils.preload import *
 
 TEXTURE_MAP = {
-    ("vertical", True): vertical_connected,
-    ("vertical", False): vertical_unconnected,
+    ("line", "vertical", True): vertical_powered,
+    ("line", "vertical", False): vertical_unpowered,
     
-    ("horizontal", True): horizontal_connected,
-    ("horizontal", False): horizontal_unconnected,
+    ("line", "horizontal", True): horizontal_powered,
+    ("line", "horizontal", False): horizontal_unpowered,
 
-    ("left_bottom", True): left_bottom_connected,
-    ("left_bottom", False): left_bottom_unconnected,
+    ("corner", "left_bottom", True): left_bottom_powered,
+    ("corner", "left_bottom", False): left_bottom_unpowered,
     
-    ("left_top", True): left_top_connected,
-    ("left_top", False): left_top_unconnected,
+    ("corner", "left_top", True): left_top_powered,
+    ("corner", "left_top", False): left_top_unpowered,
     
-    ("right_bottom", True): right_bottom_connected,
-    ("right_bottom", False): right_bottom_unconnected,
+    ("corner", "right_bottom", True): right_bottom_powered,
+    ("corner", "right_bottom", False): right_bottom_unpowered,
     
-    ("right_top", True): right_top_connected,
-    ("right_top", False): right_top_unconnected,
+    ("corner", "right_top", True): right_top_powered,
+    ("corner", "right_top", False): right_top_unpowered,
+
+    ("power_source", "all", True): power_source,
 }
 
 ROTATIONS =  {
     "line": ["vertical", "horizontal"],
-    "corner": ["left_top", "right_top", "right_bottom", "left_bottom"]
+    "corner": ["right_bottom", "left_bottom", "left_top", "right_top"],
+    "power_source": ["all"]
 }
 
 NEIGHBOURS = {
-    "vertical": lambda l, r, t, b: bool((b and b.connected) or (t and t.connected)),
-    "horizontal": lambda l, r, t, b: bool((l and l.connected) or (r and r.connected)),
-    "left_bottom": lambda l, r, t, b: bool(((l and l.connected) or (b and b.connected))),
-    "right_bottom": lambda l, r, t, b: bool(((r and r.connected) or (b and b.connected))),
-    "left_top": lambda l, r, t, b: bool(((l and l.connected) or (t and t.connected))),
-    "right_top": lambda l, r, t, b: bool(((r and r.connected) or (t and t.connected)))
+    "vertical": ["b", "t"],
+    "horizontal": ["l", "r"],
+    "left_bottom": ["l", "b"],
+    "right_bottom": ["r", "b"],
+    "left_top": ["l", "t"],
+    "right_top": ["r", "t"],
+    "all": ["l", "r", "t", "b"]
 }
 
+def get_opposite(direction):
+    if direction == "l":
+        return "r"
+    elif direction == "r":
+        return "l"
+    elif direction == "t":
+        return "b"
+    elif direction == "b":
+        return "t"
+
 class PowerLine(arcade.gui.UITextureButton):
-    def __init__(self, line_type, left_neighbor, top_neighbour):
-        super().__init__(texture=TEXTURE_MAP[ROTATIONS[line_type][0], False])
+    def __init__(self, line_type, left_neighbour, top_neighbour):
+        super().__init__(texture=TEXTURE_MAP[line_type, ROTATIONS[line_type][0], line_type == "power_source"])
 
         self.line_type = line_type
         self.rotation = ROTATIONS[line_type][0]
-        self.connected = False
+        self.powered = self.line_type == "power_source"
 
-        self.left_neighbour, self.top_neighbour = left_neighbor, top_neighbour
+        self.left_neighbour, self.top_neighbour = left_neighbour, top_neighbour
         self.right_neighbour, self.bottom_neighbour = None, None
 
         self.on_click = lambda e: self.next_rotation()
 
-        self.update()
+        self.update_visual()
 
     def next_rotation(self):
         current_index = ROTATIONS[self.line_type].index(self.rotation)
 
-        if current_index + 1 == len(ROTATIONS[self.line_type]) - 1:
+        if current_index + 1 == len(ROTATIONS[self.line_type]):
             self.rotation = ROTATIONS[self.line_type][0]
         else:
             self.rotation = ROTATIONS[self.line_type][current_index + 1]
 
-        self.update()
+        self.update_visual()
 
-    def update_neighbours(self):
-        if self.rotation == "horizontal":
-            self.left_neighbour.update() if self.left_neighbour else None
-            self.right_neighbour.update() if self.right_neighbour else None
-        elif self.rotation == "vertical":
-            self.top_neighbour.update() if self.top_neighbour else None
-            self.bottom_neighbour.update() if self.bottom_neighbour else None
+    def get_neighbour(self, name):
+        if name == "l":
+            return self.left_neighbour
+        elif name == "r":
+            return self.right_neighbour
+        elif name == "b":
+            return self.bottom_neighbour
+        elif name == "t":
+            return self.top_neighbour        
 
-    def update(self):
-        if not self.connected:
-            old_connected = self.connected
-            self.connected = NEIGHBOURS[self.rotation](self.left_neighbour, self.right_neighbour, self.top_neighbour, self.bottom_neighbour)
-            if self.connected != old_connected:
-                self.update_neighbours()
+    def get_connected_neighbours(self):
+        return [
+                self.get_neighbour(neighbour_direction) for neighbour_direction in NEIGHBOURS[self.rotation] 
+                if (
+                    self.get_neighbour(neighbour_direction) and 
+                    get_opposite(neighbour_direction) in NEIGHBOURS[self.get_neighbour(neighbour_direction).rotation]
+                )
+        ]
 
-        self.texture = TEXTURE_MAP[(self.rotation, self.connected)]
-        self.texture_hovered = TEXTURE_MAP[(self.rotation, self.connected)]
+    def update_value(self):
+        self.powered = any([neighbour.powered for neighbour in self.get_connected_neighbours()])
+
+    def update_visual(self):
+        self.texture = TEXTURE_MAP[(self.line_type, self.rotation, self.powered)]
+        self.texture_hovered = TEXTURE_MAP[(self.line_type, self.rotation, self.powered)]
         self._requires_render = True
