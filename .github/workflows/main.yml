@@ -104,7 +104,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          TAG="${{ github.ref_name }}"
+          TAG="latest"
           echo "Target release tag: $TAG"
           if gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists; will upload assets with --clobber"
