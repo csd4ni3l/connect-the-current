@@ -3,6 +3,30 @@ from arcade.types import Color
 from arcade.gui.widgets.buttons import UITextureButtonStyle, UIFlatButtonStyle
 from arcade.gui.widgets.slider import UISliderStyle
 
+ROTATIONS =  {
+    "line": ["vertical", "horizontal"],
+    "corner": ["right_bottom", "left_bottom", "left_top", "right_top"],
+    "t_junction": ["top_bottom_right", "left_right_bottom", "top_bottom_left", "left_right_top"],
+    "cross": ["cross"],
+    "power_source": ["cross"],
+    "house": ["cross"]
+}
+
+NEIGHBOURS = {
+    "vertical": ["b", "t"],
+    "horizontal": ["l", "r"],
+    "left_bottom": ["l", "b"],
+    "right_bottom": ["r", "b"],
+    "left_top": ["l", "t"],
+    "right_top": ["r", "t"],
+    "top_bottom_right": ["t", "b", "r"],
+    "top_bottom_left": ["t", "b", "l"],
+    "left_right_bottom": ["l", "r", "b"],
+    "left_right_top": ["l", "r", "t"],
+    "cross": ["l", "r", "t", "b"]
+}
+
+
 menu_background_color = (30, 30, 47)
 log_dir = 'logs'
 discord_presence_id = 1435687634960777266

@@ -5,7 +5,7 @@ from utils.preload import button_texture, button_hovered_texture
 
 from collections import deque
 
-from game.power_line import PowerLine
+from game.cells import *
 
 class Game(arcade.gui.UIView):
     def __init__(self, pypresence_client, difficulty):
@@ -15,8 +15,9 @@ class Game(arcade.gui.UIView):
         self.pypresence_client.update(state='In Game', start=self.pypresence_client.start_time)
 
         self.difficulty = difficulty
-        self.power_lines = []
+        self.cells = []
         self.power_sources = []
+        self.houses = []
 
         self.anchor = self.add_widget(arcade.gui.UIAnchorLayout(size_hint=(1, 1)))
         self.grid_size = list(map(int, difficulty.split("x")))
@@ -30,31 +31,36 @@ class Game(arcade.gui.UIView):
         self.anchor.add(self.back_button, anchor_x="left", anchor_y="top", align_x=5, align_y=-5)
 
         for row in range(self.grid_size[0]):
-            self.power_lines.append([])
+            self.cells.append([])
             for col in range(self.grid_size[1]):
-                left_neighbour = self.power_lines[row][col - 1] if col > 0 else None
-                top_neighbour = self.power_lines[row - 1][col] if row > 0 else None
+                left_neighbour = self.cells[row][col - 1] if col > 0 else None
+                top_neighbour = self.cells[row - 1][col] if row > 0 else None
 
-                line_type = random.choice(["line", "corner", "power_source"])
-                power_line = PowerLine(line_type, left_neighbour, top_neighbour)
+                cell_type = random.choice(["line", "corner", "t_junction", "cross", "power_source", "house"])
 
-                if line_type == "power_source":
-                    self.power_sources.append(power_line)
+                if cell_type in ["line", "corner", "t_junction", "cross"]:
+                    cell = PowerLine(cell_type, left_neighbour, top_neighbour)
+                elif cell_type == "power_source":
+                    cell = PowerSource(left_neighbour, top_neighbour)
+                    self.power_sources.append(cell)
+                elif cell_type == "house":
+                    cell = House(left_neighbour, top_neighbour)
+                    self.houses.append(cell)
 
-                self.power_grid.add(power_line, row=row, column=col)
-                self.power_lines[row].append(power_line)
+                self.power_grid.add(cell, row=row, column=col)
+                self.cells[row].append(cell)
 
                 if left_neighbour:
-                    left_neighbour.right_neighbour = power_line
+                    left_neighbour.right_neighbour = cell
                 if top_neighbour:
-                    top_neighbour.bottom_neighbour = power_line
+                    top_neighbour.bottom_neighbour = cell
 
-        arcade.schedule(self.update_grid, 1 / 10)
+        arcade.schedule(self.update_grid, 1 / 8)
 
     def update_grid(self, _):
-        for row in self.power_lines:
+        for row in self.cells:
             for power_line in row:
-                if power_line.line_type != "power_source":
+                if power_line.cell_type != "power_source":
                     power_line.powered = False
 
         queue = deque(self.power_sources)
@@ -74,7 +80,7 @@ class Game(arcade.gui.UIView):
                 if id(connected_neighbour) not in visited:
                     queue.append(connected_neighbour)
 
-        for row in self.power_lines:
+        for row in self.cells:
             for power_line in row:
                 power_line.update_visual()
 
