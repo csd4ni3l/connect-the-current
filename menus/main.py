@@ -55,12 +55,19 @@ class Main(arcade.gui.UIView):
         self.play_button = self.box.add(arcade.gui.UITextureButton(text="Play", texture=button_texture, texture_hovered=button_hovered_texture, width=self.window.width / 2, height=self.window.height / 10, style=big_button_style))
         self.play_button.on_click = lambda event: self.play()
 
+        self.tutorial_button = self.box.add(arcade.gui.UITextureButton(text="Tutorial", texture=button_texture, texture_hovered=button_hovered_texture, width=self.window.width / 2, height=self.window.height / 10, style=big_button_style))
+        self.tutorial_button.on_click = lambda event: self.tutorial()
+
         self.settings_button = self.box.add(arcade.gui.UITextureButton(text="Settings", texture=button_texture, texture_hovered=button_hovered_texture, width=self.window.width / 2, height=self.window.height / 10, style=big_button_style))
         self.settings_button.on_click = lambda event: self.settings()
 
     def play(self):
         from menus.difficulty_selector import DifficultySelector
         self.window.show_view(DifficultySelector(self.pypresence_client))
+
+    def tutorial(self):
+        from menus.tutorial import Tutorial
+        self.window.show_view(Tutorial(self.pypresence_client))
 
     def settings(self):
         from menus.settings import Settings

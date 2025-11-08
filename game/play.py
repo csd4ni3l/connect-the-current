@@ -1,4 +1,4 @@
-import arcade, arcade.gui
+import arcade, arcade.gui, json, time
 
 from utils.constants import button_style, NEIGHBOURS
 from utils.preload import button_texture, button_hovered_texture
@@ -9,22 +9,29 @@ from game.level_generator import generate_map
 from game.cells import *
 
 class Game(arcade.gui.UIView):
-    def __init__(self, pypresence_client, difficulty):
+    def __init__(self, pypresence_client, grid_size, source_count=None, house_count=None):
         super().__init__()
 
         self.pypresence_client = pypresence_client
         self.pypresence_client.update(state='In Game', start=self.pypresence_client.start_time)
 
-        self.difficulty = difficulty
+        self.grid_size = grid_size
+        self.source_count = source_count
+        self.house_count = house_count
+
+        self.start = time.perf_counter()
+        self.wire_rotations = 0
         self.cells = []
         self.power_sources = []
         self.houses = []
 
         self.anchor = self.add_widget(arcade.gui.UIAnchorLayout(size_hint=(1, 1)))
-        self.grid_size = int(difficulty.split("x")[0])
-        self.map = generate_map(self.grid_size, int((self.grid_size * self.grid_size) / 10), int((self.grid_size * self.grid_size) / 5))
+        self.map = generate_map(self.grid_size, int((self.grid_size * self.grid_size) / 10) if not source_count else source_count, int((self.grid_size * self.grid_size) / 5) if not house_count else house_count)
 
         self.spritelist = arcade.SpriteList()
+
+        with open("settings.json", "r") as file:
+            self.settings = json.load(file)
 
     def on_show_view(self):
         super().on_show_view()
@@ -36,12 +43,14 @@ class Game(arcade.gui.UIView):
         self.won_label = self.anchor.add(arcade.gui.UILabel(text="You won!", font_size=48), anchor_x="center", anchor_y="center")
         self.won_label.visible = False
 
+        self.info_label = self.anchor.add(arcade.gui.UILabel("Time spent: 0s Wire Rotations: 0", font_size=24), anchor_x="center", anchor_y="top")
+
         x = (self.window.width / 2) - (self.grid_size * 64) / 2
         y = (self.window.height / 2) + (self.grid_size * 64) / 2
 
         for row in range(self.grid_size):
             self.cells.append([])
-
+            
             for col in range(self.grid_size):
                 left_neighbour = self.cells[row][col - 1] if col > 0 else None
                 top_neighbour = self.cells[row - 1][col] if row > 0 else None
@@ -126,11 +135,15 @@ class Game(arcade.gui.UIView):
                     continue
 
                 if cell.rect.point_in_rect((x, y)):
-                    cell.next_rotation()        
+                    self.wire_rotations += 1
+                    cell.next_rotation(self.settings["sfx"], self.settings.get("sfx_volume", 50))        
 
     def on_draw(self):
         super().on_draw()
         self.spritelist.draw()
+
+    def on_update(self, delta_time):
+        self.info_label.text = f"Time left: {int(time.perf_counter() - self.start)}s Wire Rotations: {self.wire_rotations}"
 
     def main_exit(self):
         from menus.main import Main

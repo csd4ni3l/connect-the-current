@@ -1,7 +1,7 @@
 import arcade, arcade.gui
 
 from utils.constants import ROTATIONS, NEIGHBOURS
-from utils.preload import TEXTURE_MAP
+from utils.preload import TEXTURE_MAP, wire_sound_effect
 
 def get_opposite(direction):
     if direction == "l":
@@ -46,7 +46,10 @@ class Cell(arcade.Sprite):
     def update_visual(self):
         self.texture = TEXTURE_MAP[(self.cell_type, self.rotation, self.powered)]
 
-    def next_rotation(self):
+    def next_rotation(self, sfx, sfx_volume):
+        if sfx:
+            wire_sound_effect.play(volume=sfx_volume / 50)
+
         current_index = ROTATIONS[self.cell_type].index(self.rotation)
 
         if current_index + 1 == len(ROTATIONS[self.cell_type]):

@@ -1,6 +1,5 @@
 import random
 from utils.constants import ROTATIONS, NEIGHBOURS, DIRECTIONS
-from collections import deque
 
 def in_bounds(x, y, size):
     return 0 <= x < size and 0 <= y < size
@@ -41,8 +40,10 @@ def add_cycles(conns, num_cycles):
 
 def pick_random_cells(size, count, avoid=None):
     all_cells = [(x, y) for y in range(size) for x in range(size)]
+    
     if avoid:
         all_cells = [c for c in all_cells if c not in avoid]
+
     random.shuffle(all_cells)
     return all_cells[:count]
 
@@ -110,14 +111,14 @@ def generate_map(size, source_count, house_count, cycles=15):
     conns = add_cycles(conns, cycles)
     
     houses = dead_ends[:house_count]
-    available_cells = [(x, y) for y in range(size) for x in range(size) 
-                       if (x, y) not in houses]
+    available_cells = [(x, y) for y in range(size) for x in range(size) if (x, y) not in houses]
     random.shuffle(available_cells)
     sources = available_cells[:source_count]
     
     grid = []
     for y in range(size):
         grid.append([])
+        
         for x in range(size):
             if (x, y) in sources:
                 grid[-1].append("power_source")

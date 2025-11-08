@@ -22,9 +22,17 @@ class DifficultySelector(arcade.gui.UIView):
 
         self.box.add(arcade.gui.UILabel(text="Difficulty Selector", font_size=32))
 
-        for difficulty in ["7x7", "8x8", "9x9", "10x10", "12x12"]:
+        for difficulty in ["7x7", "8x8", "9x9", "10x10", "11x11", "12x12", "Custom"]:
             button = self.box.add(arcade.gui.UITextureButton(text=difficulty, width=self.window.width / 2, height=self.window.height / 10, texture=button_texture, texture_hovered=button_hovered_texture, style=big_button_style))
-            button.on_click = lambda e, difficulty=difficulty: self.play(difficulty)
+            
+            if not difficulty == "Custom":
+                button.on_click = lambda e, difficulty=difficulty: self.play(int(difficulty.split("x")[0]))
+            else:
+                button.on_click = lambda e: self.custom_difficulty()
+
+    def custom_difficulty(self):
+        from menus.custom_difficulty import CustomDifficulty
+        self.window.show_view(CustomDifficulty(self.pypresence_client))
 
     def play(self, difficulty):
         from game.play import Game

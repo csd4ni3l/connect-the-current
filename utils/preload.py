@@ -3,6 +3,8 @@ import arcade.gui, arcade
 button_texture = arcade.gui.NinePatchTexture(64 // 4, 64 // 4, 64 // 4, 64 // 4, arcade.load_texture("assets/graphics/button.png"))
 button_hovered_texture = arcade.gui.NinePatchTexture(64 // 4, 64 // 4, 64 // 4, 64 // 4, arcade.load_texture("assets/graphics/button_hovered.png"))
 
+wire_sound_effect = arcade.Sound("assets/sound/wire.mp3")
+
 TEXTURE_MAP = {
     ("line", "vertical", True): arcade.load_texture("assets/graphics/powered_lines/line/vertical.png"),
     ("line", "vertical", False): arcade.load_texture("assets/graphics/unpowered_lines/line/vertical.png"),

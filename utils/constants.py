@@ -3,6 +3,12 @@ from arcade.types import Color
 from arcade.gui.widgets.buttons import UITextureButtonStyle, UIFlatButtonStyle
 from arcade.gui.widgets.slider import UISliderStyle
 
+CUSTOM_DIFFICULTY_SETTINGS = [
+    ["source_count", "Source Count", 1, 20],
+    ["house_count", "House Count", 1, 20],
+    ["size", "Size", 3, 30]
+]
+
 ROTATIONS =  {
     "line": ["vertical", "horizontal"],
     "corner": ["right_bottom", "left_bottom", "left_top", "right_top"],
