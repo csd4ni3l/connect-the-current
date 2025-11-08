@@ -5,6 +5,7 @@ from utils.preload import button_texture, button_hovered_texture
 
 from collections import deque
 
+from game.level_generator import generate_map
 from game.cells import *
 
 class Game(arcade.gui.UIView):
@@ -20,8 +21,10 @@ class Game(arcade.gui.UIView):
         self.houses = []
 
         self.anchor = self.add_widget(arcade.gui.UIAnchorLayout(size_hint=(1, 1)))
-        self.grid_size = list(map(int, difficulty.split("x")))
-        self.power_grid = self.anchor.add(arcade.gui.UIGridLayout(horizontal_spacing=0, vertical_spacing=0, row_count=self.grid_size[0], column_count=self.grid_size[1]))
+        self.grid_size = int(difficulty.split("x")[0])
+        self.grid = generate_map(self.grid_size, int((self.grid_size * self.grid_size) / 10), int((self.grid_size * self.grid_size) / 5))
+
+        self.power_grid = self.anchor.add(arcade.gui.UIGridLayout(horizontal_spacing=0, vertical_spacing=0, row_count=self.grid_size, column_count=self.grid_size))
 
     def on_show_view(self):
         super().on_show_view()
@@ -30,13 +33,13 @@ class Game(arcade.gui.UIView):
         self.back_button.on_click = lambda event: self.main_exit()
         self.anchor.add(self.back_button, anchor_x="left", anchor_y="top", align_x=5, align_y=-5)
 
-        for row in range(self.grid_size[0]):
+        for row in range(self.grid_size):
             self.cells.append([])
-            for col in range(self.grid_size[1]):
+            for col in range(self.grid_size):
                 left_neighbour = self.cells[row][col - 1] if col > 0 else None
                 top_neighbour = self.cells[row - 1][col] if row > 0 else None
 
-                cell_type = random.choice(["line", "corner", "t_junction", "cross", "power_source", "house"])
+                cell_type = self.grid[row][col]
 
                 if cell_type in ["line", "corner", "t_junction", "cross"]:
                     cell = PowerLine(cell_type, left_neighbour, top_neighbour)
@@ -81,8 +84,9 @@ class Game(arcade.gui.UIView):
                     queue.append(connected_neighbour)
 
         for row in self.cells:
-            for power_line in row:
-                power_line.update_visual()
+            for cell in row:
+                cell.update_visual()
+
 
     def main_exit(self):
         from menus.main import Main

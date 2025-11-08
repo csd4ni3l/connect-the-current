@@ -15,9 +15,9 @@ def get_opposite(direction):
 
 class Cell(arcade.gui.UITextureButton):
     def __init__(self, cell_type, left_neighbour, top_neighbour):
-        super().__init__(texture=TEXTURE_MAP[cell_type, ROTATIONS[cell_type][0], cell_type == "power_source"])
+        super().__init__(texture=TEXTURE_MAP[cell_type, ROTATIONS[cell_type][0] if cell_type in ROTATIONS else "cross", cell_type == "power_source"])
 
-        self.rotation = ROTATIONS[cell_type][0]
+        self.rotation = ROTATIONS[cell_type][0] if cell_type in ROTATIONS else "cross"
         self.cell_type = cell_type
         self.powered = False
         self.left_neighbour, self.top_neighbour = left_neighbour, top_neighbour
@@ -38,12 +38,10 @@ class Cell(arcade.gui.UITextureButton):
                 self.get_neighbour(neighbour_direction) for neighbour_direction in NEIGHBOURS[self.rotation] 
                 if (
                     self.get_neighbour(neighbour_direction) and 
+                    self.get_neighbour(neighbour_direction).cell_type != "house" and
                     get_opposite(neighbour_direction) in NEIGHBOURS[self.get_neighbour(neighbour_direction).rotation]
                 )
         ]
-
-    def update_value(self):
-        self.powered = any([neighbour.powered for neighbour in self.get_connected_neighbours()])
 
     def update_visual(self):
         self.texture = TEXTURE_MAP[(self.cell_type, self.rotation, self.powered)]

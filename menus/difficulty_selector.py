@@ -22,7 +22,7 @@ class DifficultySelector(arcade.gui.UIView):
 
         self.box.add(arcade.gui.UILabel(text="Difficulty Selector", font_size=32))
 
-        for difficulty in ["3x3", "4x4", "5x5", "6x6", "9x9"]:
+        for difficulty in ["7x7", "8x8", "9x9", "10x10", "12x12"]:
             button = self.box.add(arcade.gui.UITextureButton(text=difficulty, width=self.window.width / 2, height=self.window.height / 10, texture=button_texture, texture_hovered=button_hovered_texture, style=big_button_style))
             button.on_click = lambda e, difficulty=difficulty: self.play(difficulty)
 
