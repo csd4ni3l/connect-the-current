@@ -13,9 +13,9 @@ def get_opposite(direction):
     elif direction == "b":
         return "t"
 
-class Cell(arcade.gui.UITextureButton):
-    def __init__(self, cell_type, left_neighbour, top_neighbour):
-        super().__init__(texture=TEXTURE_MAP[cell_type, ROTATIONS[cell_type][0] if cell_type in ROTATIONS else "cross", cell_type == "power_source"])
+class Cell(arcade.Sprite):
+    def __init__(self, cell_type, x, y, left_neighbour, top_neighbour):
+        super().__init__(TEXTURE_MAP[cell_type, ROTATIONS[cell_type][0] if cell_type in ROTATIONS else "cross", cell_type == "power_source"], center_x=x, center_y=y)
 
         self.rotation = ROTATIONS[cell_type][0] if cell_type in ROTATIONS else "cross"
         self.cell_type = cell_type
@@ -33,21 +33,18 @@ class Cell(arcade.gui.UITextureButton):
         elif name == "t":
             return self.top_neighbour
         
-    def get_connected_neighbours(self):
+    def get_connected_neighbours(self, include_houses=False):
         return [
                 self.get_neighbour(neighbour_direction) for neighbour_direction in NEIGHBOURS[self.rotation] 
                 if (
                     self.get_neighbour(neighbour_direction) and 
-                    self.get_neighbour(neighbour_direction).cell_type != "house" and
+                    (include_houses or self.get_neighbour(neighbour_direction).cell_type != "house") and
                     get_opposite(neighbour_direction) in NEIGHBOURS[self.get_neighbour(neighbour_direction).rotation]
                 )
         ]
 
     def update_visual(self):
         self.texture = TEXTURE_MAP[(self.cell_type, self.rotation, self.powered)]
-        self.texture_hovered = TEXTURE_MAP[(self.cell_type, self.rotation, self.powered)]
-        self.texture_pressed = TEXTURE_MAP[(self.cell_type, self.rotation, self.powered)]
-        self._requires_render = True
 
     def next_rotation(self):
         current_index = ROTATIONS[self.cell_type].index(self.rotation)
