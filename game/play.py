@@ -1,4 +1,4 @@
-import arcade, arcade.gui, json, time
+import arcade, arcade.gui, json, time, os
 
 from utils.constants import button_style, NEIGHBOURS
 from utils.preload import button_texture, button_hovered_texture
@@ -21,10 +21,12 @@ class Game(arcade.gui.UIView):
 
         self.start = time.perf_counter()
         self.wire_rotations = 0
+        self.won = False
+    
         self.cells = []
         self.power_sources = []
         self.houses = []
-
+        
         self.anchor = self.add_widget(arcade.gui.UIAnchorLayout(size_hint=(1, 1)))
         self.map = generate_map(self.grid_size, int((self.grid_size * self.grid_size) / 10) if not source_count else source_count, int((self.grid_size * self.grid_size) / 5) if not house_count else house_count)
 
@@ -32,6 +34,25 @@ class Game(arcade.gui.UIView):
 
         with open("settings.json", "r") as file:
             self.settings = json.load(file)
+
+        self.first_time = False
+        self.custom = False
+        
+        if source_count is None:
+            if os.path.exists("data.json"):
+                with open("data.json") as file:
+                    self.data = json.load(file)
+            else:
+                self.data = {}
+
+            if self.data.get(f"best_time_{self.grid_size}", None) == None:
+                self.best_time = self.data[f"best_time_{self.grid_size}"] = 99999
+                self.first_time = True
+            else:
+                self.best_time = self.data[f"best_time_{self.grid_size}"]
+        else:
+            self.custom = True
+            self.best_time = None
 
     def on_show_view(self):
         super().on_show_view()
@@ -43,10 +64,13 @@ class Game(arcade.gui.UIView):
         self.won_label = self.anchor.add(arcade.gui.UILabel(text="You won!", font_size=48), anchor_x="center", anchor_y="center")
         self.won_label.visible = False
 
-        self.info_label = self.anchor.add(arcade.gui.UILabel("Time spent: 0s Wire Rotations: 0", font_size=24), anchor_x="center", anchor_y="top")
+        if not self.custom:
+            self.info_label = self.anchor.add(arcade.gui.UILabel(f"Time spent: 0s Best time: {self.best_time}s Wire Rotations: 0", font_size=24), anchor_x="center", anchor_y="top")
+        else:
+            self.info_label = self.anchor.add(arcade.gui.UILabel(f"Time spent: 0s Wire Rotations: 0", font_size=24), anchor_x="center", anchor_y="top")
 
-        x = (self.window.width / 2) - (self.grid_size * 64) / 2
-        y = (self.window.height / 2) + (self.grid_size * 64) / 2
+        x = (self.window.width / 2) - (self.grid_size * 32) 
+        y = (self.window.height / 2) + (self.grid_size * 32) - 32 # extra 32 needed because the first iteration will not be higher by 32
 
         for row in range(self.grid_size):
             self.cells.append([])
@@ -75,6 +99,7 @@ class Game(arcade.gui.UIView):
                     top_neighbour.bottom_neighbour = cell
                 
                 x += 64
+
             x = (self.window.width / 2) - (self.grid_size * 64) / 2
             y -= 64
 
@@ -125,6 +150,14 @@ class Game(arcade.gui.UIView):
 
         self.won_label.visible = True
         self.spritelist.visible = False
+        self.won = True
+
+        if not self.custom and int(time.perf_counter() - self.start) < self.best_time:
+            self.data[f"best_time_{self.grid_size}"] = self.best_time = int(time.perf_counter() - self.start)
+            self.info_label.text = f"Time left: {int(time.perf_counter() - self.start)}s Best time: {self.best_time}s Wire Rotations: {self.wire_rotations}"
+
+            with open("data.json", "w") as file:
+                file.write(json.dumps(self.data, indent=4))
 
         arcade.unschedule(self.update_grid)
 
@@ -143,7 +176,16 @@ class Game(arcade.gui.UIView):
         self.spritelist.draw()
 
     def on_update(self, delta_time):
-        self.info_label.text = f"Time left: {int(time.perf_counter() - self.start)}s Wire Rotations: {self.wire_rotations}"
+        if self.won:
+            return
+        
+        if self.first_time:
+            self.best_time = int(time.perf_counter() - self.start)
+
+        if not self.custom:
+            self.info_label.text = f"Time left: {int(time.perf_counter() - self.start)}s Best time: {self.best_time}s Wire Rotations: {self.wire_rotations}"
+        else:
+            self.info_label.text = f"Time left: {int(time.perf_counter() - self.start)}s Wire Rotations: {self.wire_rotations}"
 
     def main_exit(self):
         from menus.main import Main

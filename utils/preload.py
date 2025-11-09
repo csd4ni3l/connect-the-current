@@ -41,6 +41,6 @@ TEXTURE_MAP = {
 
     ("power_source", "cross", True): arcade.load_texture("assets/graphics/power_source.png"),
 
-    ("house", "cross", True): arcade.load_texture("assets/graphics/powered_lines/cross/cross.png"),
-    ("house", "cross", False): arcade.load_texture("assets/graphics/unpowered_lines/cross/cross.png"),
-}
+    ("house", "cross", True): arcade.load_texture("assets/graphics/house_unpowered.png"),
+    ("house", "cross", False): arcade.load_texture("assets/graphics/house_powered.png"),
+} 
