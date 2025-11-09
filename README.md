@@ -1,5 +1,7 @@
 CTC: Connect The Current is a game where you have a power source, and you have to direct the power lines to houses by rotating them into the correct direction.
 
+[![Demo Video](https://img.youtube.com/vi/WXx2cmiaeEc/hqdefault.jpg)](https://youtu.be/WXx2cmiaeEc)
+
 # Tutorial
 In Connect the Current, you have to rotate power lines so power reaches to all of the houses.
 - Every line has to be connected on all of it's sides.
