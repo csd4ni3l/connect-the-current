@@ -10,13 +10,14 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 pyglet.resource.path.append(script_dir)
 pyglet.font.add_directory(os.path.join(script_dir, 'assets', 'fonts'))
 
-
 from utils.utils import get_closest_resolution, print_debug_info, on_exception
 from utils.constants import log_dir, menu_background_color
 from menus.main import Main
 from arcade.experimental.controller_window import ControllerWindow
 
 sys.excepthook = on_exception
+
+__builtins__.print = lambda *args, **kwargs: logging.debug(" ".join(map(str, args)))
 
 if not log_dir in os.listdir():
     os.makedirs(log_dir)
@@ -46,8 +47,8 @@ if os.path.exists('settings.json'):
         antialiasing = 0
 
     # Wayland workaround (can be overridden with environment variable)
-    if (platform.system() == "Linux" and 
-        os.environ.get("WAYLAND_DISPLAY") and 
+    if (platform.system() == "Linux" and
+        os.environ.get("WAYLAND_DISPLAY") and
         not os.environ.get("ARCADE_FORCE_MSAA")):
         logging.info("Wayland detected - disabling MSAA (set ARCADE_FORCE_MSAA=1 to override)")
         antialiasing = 0
@@ -59,22 +60,20 @@ if os.path.exists('settings.json'):
 else:
     resolution = get_closest_resolution()
     antialiasing = 4
-    
+
     # Wayland workaround (can be overridden with environment variable)
-    if (platform.system() == "Linux" and 
-        os.environ.get("WAYLAND_DISPLAY") and 
+    if (platform.system() == "Linux" and
+        os.environ.get("WAYLAND_DISPLAY") and
         not os.environ.get("ARCADE_FORCE_MSAA")):
         logging.info("Wayland detected - disabling MSAA (set ARCADE_FORCE_MSAA=1 to override)")
         antialiasing = 0
-    
+
     fullscreen = False
     style = arcade.Window.WINDOW_STYLE_DEFAULT
     vsync = True
     fps_limit = 0
 
     settings = {
-        "music": True,
-        "music_volume": 50,
         "resolution": f"{resolution[0]}x{resolution[1]}",
         "antialiasing": "4x MSAA",
         "window_mode": "Windowed",
@@ -86,15 +85,12 @@ else:
     with open("settings.json", "w") as file:
         file.write(json.dumps(settings))
 
-# if settings.get("music", True):
-#     theme_sound.play(volume=settings.get("music_volume", 50) / 100, loop=True)
-
 try:
-    window = ControllerWindow(width=resolution[0], height=resolution[1], title='Connect the Current', samples=antialiasing, antialiasing=antialiasing > 0, fullscreen=fullscreen, vsync=vsync, resizable=False, style=style, visible=False)
+    window = ControllerWindow(width=resolution[0], height=resolution[1], title='GameName', samples=antialiasing, antialiasing=antialiasing > 0, fullscreen=fullscreen, vsync=vsync, resizable=False, style=style, visible=False)
 except (FileNotFoundError, PermissionError) as e:
     logging.warning(f"Controller support unavailable: {e}. Falling back to regular window.")
-    window = arcade.Window(width=resolution[0], height=resolution[1], title='Connect the Current', samples=antialiasing, antialiasing=antialiasing > 0, fullscreen=fullscreen, vsync=vsync, resizable=False, style=style, visible=False)
-    
+    window = arcade.Window(width=resolution[0], height=resolution[1], title='GameName', samples=antialiasing, antialiasing=antialiasing > 0, fullscreen=fullscreen, vsync=vsync, resizable=False, style=style, visible=False)
+
 if vsync:
     window.set_vsync(True)
     display_mode = window.display.get_default_screen().get_mode()
