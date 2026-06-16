@@ -11,3 +11,7 @@ In Connect the Current, you have to rotate power lines so power reaches to all o
 (This is also because it's randomly generated and i couldn't find a way to generate maps with no meaningless branches)
 - To rotate a line, just click on it and it will change its rotation.
 - Maps are randomly generated, difficulty(size, source count, house count) depends on what you pick and grows exponentially.
+
+---
+**Migration Notice:** This repository has been moved to https://git.csd4ni3l.hu/csd4ni3l/connect-the-current
+---
