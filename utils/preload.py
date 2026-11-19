@@ -12,7 +12,7 @@ button_hovered_texture = arcade.gui.NinePatchTexture(
     arcade.load_texture(os.path.join(_assets_dir, "graphics", "button_hovered.png"))
 )
 
-wire_sound_effect = arcade.Sound(os.path.join(_assets_dir, "sound", "wire.mp3"))
+wire_sound_effect = arcade.Sound(os.path.join(_assets_dir, "sound", "wire.wav"))
 
 TEXTURE_MAP = {
     ("line", "vertical", True): arcade.load_texture(os.path.join(_assets_dir, "graphics", "powered_lines", "line", "vertical.png")),
